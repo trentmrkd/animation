@@ -1,125 +1,252 @@
+*  LOGIN SCREEN Color CSS Code */
+/*  Color CSS Code */
 :root {
-  --main-bg-color: #0E1330;
-  --border-color: #282D45;
-  --input-bg-color: rgba(255, 255, 255, 0.1);
-  --input-text-color: #fff;
-  --button-bg-color: #7214FF;
-  --button-hover-color: #5F10D9;
-  --link-color: #2D55FB;
+  --login-button-background-color: #fff;
+  --login-button-background-hover-color: #1690ff;
+  --main-body-background-color: #333;
+  --input-box-background-color: #fff;
+  --login-heading-color: #ffffff;
+  --login-button-text-color: #333;
+  --login-icon-color: #333;
+  --login-error-text-color: rgb(255, 16, 16);
+  --login-input-label-color: #fff;
+  --login-otp-text-color: #fff;
+  --login-forgot-password-text-color: #fff !important;
+  --login-footer-text-color: #fff;
+  --login-footer-link-color: #fff !important;
+  --sidebar-bg-color: #21262D !important;
 }
 
 .hl_login {
-  background-color: var(--main-bg-color);
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: Arial, sans-serif;
-}
-
-.hl_login--body {
-  width: 690px;
-  background-color: var(--main-bg-color);
-  border-radius: 9.5px;
-  border: 1px solid var(--border-color);
-  padding: 40px;
-  position: relative;
-  overflow: hidden;
-}
-
-.hl_login--body::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at 15% 80%, rgba(45, 85, 251, 0.6), transparent 60%),
-              radial-gradient(circle at 85% 20%, rgba(114, 20, 255, 0.6), transparent 60%);
-  filter: blur(75px);
-  z-index: -1;
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  margin-top: 0px !important;
+  height: 100vh;
+  background: var(--main-body-background-color);
 }
 
 .hl_login--header {
-  text-align: center;
-  margin-bottom: 30px;
+  background: #fff0 !important;
+  border-bottom: 0 !important;
+  padding: 0 !important;
+  margin-bottom: 0px !important;
+  display: flex;
 }
 
-.hl_login--header img {
-  max-width: 200px;
+.hl_login--header .container-fluid a img {
+  max-height: 120px !important; /* Adjust this value to set the maximum height you want */
+  width: 100%; /* To maintain the aspect ratio */
 }
 
-.hl_login--body .heading2 {
-  color: #fff;
-  font-size: 24px;
-  margin-bottom: 30px;
-  text-align: center;
+
+div.hl_login--body {
+  max-width: 550px !important;
+  width: 100% !important;
+  background: var(--main-body-background-color) !important;
+  border-radius: 10px !important;
+  box-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
+  padding-left: 30px;
 }
 
-.hl_login .form-group {
-  margin-bottom: 20px;
+.hl_login--body .card {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: rgba(255, 255, 255, 0);
+}
+
+.hl_login--body .card .card-body {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 auto;
+  padding-top: 0px;
+  padding-bottom: 0px;
 }
 
 .hl_login .form-control {
-  background-color: var(--input-bg-color);
-  border: none;
-  border-radius: 5px;
-  color: var(--input-text-color);
-  padding: 12px 15px;
-  width: 100%;
-  font-size: 16px;
+  background: var(--input-box-background-color) !important;
+  font-size: 0.875rem;
+  color: #2a3135;
+  border: 1px solid #bdbdbd !important;
+  border-radius: 50px !important;
+  padding: 15px 10px !important;
+  box-shadow: inset 5px 0px 10px 1px rgba(0, 0, 0, 0.16);
 }
 
-.hl_login .form-control::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+.hl_login--body .login-card-heading {
+  margin-bottom: 20px;
+  text-align: center;
 }
 
-.hl_login .button-holder button {
-  background-color: var(--button-bg-color);
-  border: none;
-  border-radius: 5px;
+.hl_login--body .heading2 {
+  margin-bottom: 10px;
+  font-size: 25px;
+  color: transparent !important;
+  border-bottom: 3px solid #fff;
+  line-height: 3rem;
+}
+
+/* SHOW DIFF TEXT INSTEAD OF STOCK TEXT
+.hl_login--body .heading2::after {
+content: "Log into LeadLabz" !important;
+  font-size: 25px;
+  color: var(--login-heading-color);
+  line-height: 3rem;
+position: absolute !important;
+top: 0 !important;
+margin: 0 !important;
+text-align: center !important;
+}
+*/
+
+.hl_login .button-holder.form-group {
+  margin: 10px auto !important;
+}
+
+.hl_login--body .heading2 {
+  margin-bottom: 10px;
+  font-size: 25px;
   color: #fff;
-  cursor: pointer;
-  font-size: 16px;
-  padding: 12px;
-  width: 100%;
-  transition: background-color 0.3s ease;
 }
 
-.hl_login .button-holder button:hover {
-  background-color: var(--button-hover-color);
+.hl_login--body .form-group label {
+  display: none;
+}
+
+.hl_login--body .foot-note {
+  font-size: 0.75rem;
+  text-align: center;
+  margin-top: 30px;
+  color: #fff;
+}
+
+.hl_login--body a {
+  color: var(login-footer-link-text) !important;
+}
+
+.hl_login--body div.form-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hl_login--body
+  .form-group:nth-child(2)
+  .hl-text-input-container
+  > .relative::before {
+  content: "\f007";
+  font-size: 25px;
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  left: -60px;
+  color: var(--login-icon-color);
+  background: #fff;
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.hl_login--body
+  .form-group:nth-child(3)
+  .hl-text-input-container
+  > .relative::before {
+  content: "\f023";
+  font-size: 25px;
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  left: -60px;
+  color: var(--login-icon-color);
+  background: #fff;
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.hl_login--body .form-group:nth-child(4) button::before {
+  content: "\f0a9";
+  font-size: 25px;
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  left: -60px;
+  color: var(--login-icon-color);
+  background: #fff;
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  border-radius: 50px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hl_login .sm\:text-sm {
+  min-height: 50px;
+}
+
+.hl_login button {
+  background-color: var(--login-button-background-color);
+  color: var(--login-button-text-color);
+  min-height: 55px;
+}
+
+.hl_login .hover\:bg-curious-blue-600:hover,
+.hl_login button:hover {
+  background-color: var(--login-button-background-hover-color) !important;
+}
+
+.hl_login #email-error {
+  color: var(--login-error-text-color);
+}
+
+.hl_login .hl-text-input-label {
+  color: var(--login-input-label-color);
+}
+
+.hl_login .font-semibold.cursor-pointer.text-curious-blue-500 {
+  color: var(--login-input-label-color);
+}
+
+.hl_login [for="otp-for-email"],
+.hl_login [for="otp-for-phone"] {
+  color: var(--login-otp-text-color);
 }
 
 .hl_login .forgot-password {
-  color: var(--link-color);
-  text-decoration: none;
-  font-size: 14px;
-  display: block;
-  text-align: right;
-  margin-top: 10px;
+  color: var(--login-forgot-password-text-color);
 }
 
 .hl_login .foot-note {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
-  text-align: center;
-  margin-top: 30px;
+  color: var(--login-footer-text-color);
 }
 
 .hl_login .foot-note a {
-  color: var(--link-color);
-  text-decoration: none;
-}
-
-/* Remove icon styles as they're not present in the new design */
-.hl_login--body .form-group::before {
-  content: none;
-}
-
-/* Adjust responsive design if needed */
-@media (max-width: 768px) {
-  .hl_login--body {
-    width: 90%;
-    max-width: 500px;
-  }
+  color: var(--login-footer-link-color);
 }
