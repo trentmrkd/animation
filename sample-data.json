@@ -1,0 +1,25 @@
+{
+  "company": "TechCorp",
+  "employees": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "position": "Software Developer",
+      "skills": ["JavaScript", "Python", "React"]
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "position": "UX Designer",
+      "skills": ["Figma", "Sketch", "Adobe XD"]
+    },
+    {
+      "id": 3,
+      "name": "Mike Johnson",
+      "position": "Data Analyst",
+      "skills": ["SQL", "Python", "Tableau"]
+    }
+  ],
+  "founded": 2010,
+  "location": "San Francisco, CA"
+}
