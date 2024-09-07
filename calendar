@@ -1,0 +1,1719 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Dynamic Calendar View</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #4a4a4a;
+            font-size: 24px;
+        }
+
+        #calendar-filter {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .filter-btn {
+            padding: 8px 12px;
+            font-size: 13px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            background-color: white;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background-color: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 1px;
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            background-color: white;
+            padding: 10px;
+            text-align: center;
+            vertical-align: top;
+            position: relative;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+            color: #4a4a4a;
+        }
+
+        .time-slot {
+            height: 60px;
+            border-top: 1px solid #e0e0e0;
+            transition: height 0.3s ease;
+        }
+
+        .time-slot.empty {
+            height: 20px;
+        }
+
+        .calendar-event {
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: white;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            z-index: 1;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+        }
+
+        .calendar-event:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+        }
+
+        .event-duration {
+            font-size: 9px;
+            opacity: 0.8;
+        }
+
+        #mobile-day-selector, #mobile-calendar-view, #mobile-class-filter {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .filter-btn {
+                display: none; /* Hide buttons on mobile */
+            }
+
+            table {
+                display: none; /* Hide table on mobile */
+            }
+
+            #mobile-day-selector, #mobile-calendar-view, #mobile-class-filter {
+                display: block; /* Show mobile-specific elements */
+            }
+
+            #mobile-day-selector select, #mobile-class-filter select {
+                width: 100%;
+                padding: 12px;
+                font-size: 16px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                background-color: white;
+                appearance: none;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z' fill='%23333'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 12px center;
+                margin-bottom: 12px;
+            }
+
+            .mobile-time-slot {
+                background-color: #f9f9f9;
+                margin-bottom: 12px;
+                padding: 12px;
+                border-radius: 6px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+
+            .mobile-time-slot h3 {
+                margin: 0 0 10px 0;
+                font-size: 16px;
+                color: #333;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 5px;
+            }
+
+            .mobile-calendar-event {
+                display: block;
+                background-color: #2196F3;
+                color: white;
+                padding: 10px 5px;
+                margin-bottom: 8px;
+                border-radius: 6px;
+                font-size: 14px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .mobile-event-duration {
+                font-size: 12px;
+                opacity: 0.9;
+                display: block;
+                margin-top: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Dynamic Calendar View</h1>
+    <div id="calendar-filter"></div>
+
+    <!-- Mobile class filter dropdown -->
+    <div id="mobile-class-filter">
+        <select id="class-select">
+            <!-- Options will be populated dynamically -->
+        </select>
+    </div>
+
+    <!-- Mobile day selector dropdown -->
+    <div id="mobile-day-selector">
+        <select id="day-select">
+            <option value="0">Sunday</option>
+            <option value="1">Monday</option>
+            <option value="2">Tuesday</option>
+            <option value="3">Wednesday</option>
+            <option value="4">Thursday</option>
+            <option value="5">Friday</option>
+            <option value="6">Saturday</option>
+        </select>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Sunday</th>
+                <th>Monday</th>
+                <th>Tuesday</th>
+                <th>Wednesday</th>
+                <th>Thursday</th>
+                <th>Friday</th>
+                <th>Saturday</th>
+            </tr>
+        </thead>
+        <tbody id="calendar-body">
+            <!-- Calendar slots will be inserted here dynamically -->
+        </tbody>
+    </table>
+
+    <div id="mobile-calendar-view"></div>
+
+    <script>
+        // Paste your JSON data here
+        const jsonData = {
+  "calendars": [
+    {
+      "id": "CeuiMHRjTTiOGqagFyfD",
+      "notifications": [
+        {
+          "shouldSendToContact": false,
+          "shouldSendToSelectedUsers": true,
+          "selectedUsers": "{{custom_values.from_email}}\n{{custom_values.lead_email}}",
+          "shouldSendToUser": false,
+          "templateId": "default",
+          "type": "email",
+          "shouldSendToGuest": false
+        }
+      ],
+      "locationId": "lTs2R8SUg2ZFmd0SmNUE",
+      "groupId": "gCeZ0A2bXLebNRgv8ZPv",
+      "name": "Kids & Teens (7+yrs) Muay Thai - First Class",
+      "description": "Kids & Teens (7+yrs) Muay Thai - First Class with {{custom_values.business_short_name}} here!\nWe're located at: {{custom_values.business_location}}",
+      "widgetSlug": "onewaykidsandteensbjjkbfpdc",
+      "calendarType": "event",
+      "widgetType": "default",
+      "eventTitle": "{{contact.name}} <> {{custom_values.business_short_name}}",
+      "eventColor": "#039BE5",
+      "meetingLocation": "{{custom_values.business_location}}",
+      "slotDuration": 45,
+      "slotDurationUnit": "mins",
+      "slotInterval": 45,
+      "slotIntervalUnit": "mins",
+      "slotBufferUnit": "mins",
+      "appoinmentPerSlot": 8,
+      "appoinmentPerDay": 8,
+      "openHours": [
+        {
+          "hours": [
+            {
+              "closeHour": 18,
+              "openHour": 17,
+              "closeMinute": 25,
+              "openMinute": 40
+            }
+          ],
+          "daysOfTheWeek": [
+            1
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 18,
+              "openHour": 17,
+              "closeMinute": 25,
+              "openMinute": 40
+            }
+          ],
+          "daysOfTheWeek": [
+            3
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 11,
+              "openHour": 11,
+              "closeMinute": 45,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            6
+          ]
+        }
+      ],
+      "enableRecurring": false,
+      "recurring": {
+        "monthDays": [],
+        "bookingOption": "skip",
+        "count": 1,
+        "freq": "DAILY",
+        "weekDays": [],
+        "bookingOverlapDefaultStatus": "",
+        "interval": null
+      },
+      "formId": "LUBkjoXLU7igZzh32mhh",
+      "stickyContact": false,
+      "isLivePaymentMode": false,
+      "autoConfirm": true,
+      "googleInvitationEmails": false,
+      "allowReschedule": true,
+      "allowCancellation": true,
+      "shouldAssignContactToTeamMember": false,
+      "shouldSkipAssigningContactForExisting": false,
+      "notes": "We're looking forward to meeting you!\nWondering what to bring?\n{{custom_values.bring_this}}\n\nLocation: {{appointment.meeting_location}}\n\nIf for any reason you need to cancel or reschedule, please use one of the links below!\nReschedule:\n{{reschedule_link}}\n\n\n\nPhone: {{contact.phone}}\nEmail:- {{contact.email}}\nNotes: {{appointment.notes}}Need to make a change to this event?\nReschedule:-\n{{reschedule_link}}\n\nCancel:-\n{{cancellation_link}}",
+      "pixelId": "{{custom_values.fb_pixel_id}}",
+      "formSubmitType": "RedirectURL",
+      "formSubmitRedirectUrl": "{{custom_values.booking_confirmation_page}}",
+      "formSubmitThanksMessage": "Thank you for your appointment request. We will contact you shortly to confirm your request.",
+      "availabilities": [],
+      "guestType": "collect_detail",
+      "consentLabel": "I confirm that I want to receive content from this company using any contact information I provide.",
+      "calendarCoverImage": "",
+      "allowBookingAfterUnit": "hours",
+      "allowBookingAfter": 2,
+      "allowBookingFor": 7,
+      "allowBookingForUnit": "days",
+      "preBufferUnit": "mins"
+    },
+    {
+      "id": "Gfg71KfaYQSib7hXp2v1",
+      "notifications": [
+        {
+          "shouldSendToContact": false,
+          "shouldSendToSelectedUsers": true,
+          "selectedUsers": "{{custom_values.from_email}}\n{{custom_values.lead_email}}",
+          "shouldSendToUser": false,
+          "templateId": "default",
+          "type": "email",
+          "shouldSendToGuest": false
+        }
+      ],
+      "locationId": "lTs2R8SUg2ZFmd0SmNUE",
+      "groupId": "M6VnzNeRvejGMXUdPYN1",
+      "name": "Wrestling Club (12+ yrs) and Adults - First Class",
+      "description": "Book Your Free Wrestling Teens and Adults Trial with {{custom_values.business_short_name}} here!\nWe're located at: {{custom_values.business_location}}",
+      "widgetSlug": "onewaywrestlingteensandadultspburk2",
+      "calendarType": "event",
+      "widgetType": "default",
+      "eventTitle": "{{contact.name}} <> {{custom_values.business_short_name}}",
+      "eventColor": "#616161",
+      "meetingLocation": "",
+      "slotDuration": 60,
+      "slotDurationUnit": "mins",
+      "slotInterval": 60,
+      "slotIntervalUnit": "mins",
+      "slotBufferUnit": "mins",
+      "appoinmentPerSlot": 1,
+      "appoinmentPerDay": 8,
+      "openHours": [
+        {
+          "hours": [
+            {
+              "closeHour": 16,
+              "openHour": 15,
+              "closeMinute": 30,
+              "openMinute": 30
+            }
+          ],
+          "daysOfTheWeek": [
+            1
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 16,
+              "openHour": 15,
+              "closeMinute": 30,
+              "openMinute": 30
+            }
+          ],
+          "daysOfTheWeek": [
+            3
+          ]
+        }
+      ],
+      "enableRecurring": false,
+      "recurring": {
+        "monthDays": [],
+        "bookingOption": "skip",
+        "count": 1,
+        "freq": "DAILY",
+        "weekDays": [],
+        "bookingOverlapDefaultStatus": "",
+        "interval": null
+      },
+      "formId": "LUBkjoXLU7igZzh32mhh",
+      "stickyContact": false,
+      "isLivePaymentMode": false,
+      "autoConfirm": true,
+      "googleInvitationEmails": false,
+      "allowReschedule": true,
+      "allowCancellation": true,
+      "shouldAssignContactToTeamMember": false,
+      "shouldSkipAssigningContactForExisting": false,
+      "notes": "We're looking forward to meeting you!\nWondering what to bring?\n{{custom_values.bring_this}}\n\nLocation: {{appointment.meeting_location}}\n\nIf for any reason you need to cancel or reschedule, please use one of the links below!\nReschedule:\n{{reschedule_link}}\n\n\n\nPhone: {{contact.phone}}\nEmail:- {{contact.email}}\nNotes: {{appointment.notes}}Need to make a change to this event?\nReschedule:-\n{{reschedule_link}}\n\nCancel:-\n{{cancellation_link}}",
+      "pixelId": "{{custom_values.fb_pixel_id}}",
+      "formSubmitType": "RedirectURL",
+      "formSubmitRedirectUrl": "{{custom_values.booking_confirmation_page}}",
+      "formSubmitThanksMessage": "Thank you for your appointment request. We will contact you shortly to confirm your request.",
+      "availabilities": [],
+      "guestType": "collect_detail",
+      "consentLabel": "I confirm that I want to receive content from this company using any contact information I provide.",
+      "calendarCoverImage": "",
+      "lookBusyConfig": {
+        "lookBusyPercentage": 0,
+        "enabled": false
+      },
+      "allowBookingAfterUnit": "hours",
+      "allowBookingAfter": 4,
+      "allowBookingFor": 7,
+      "allowBookingForUnit": "days",
+      "preBufferUnit": "mins"
+    },
+    {
+      "id": "Jz3Sk0CEH9xxmLVLdJUT",
+      "notifications": [
+        {
+          "shouldSendToContact": false,
+          "shouldSendToSelectedUsers": true,
+          "selectedUsers": "{{custom_values.from_email}}\n{{custom_values.lead_email}}",
+          "shouldSendToUser": false,
+          "templateId": "default",
+          "type": "email",
+          "shouldSendToGuest": false
+        }
+      ],
+      "locationId": "lTs2R8SUg2ZFmd0SmNUE",
+      "groupId": "ZgkVfX2PDtCJVVwkglgc",
+      "name": "Boxing - First Class",
+      "description": "Book Your Free Boxing Free Trial with {{custom_values.business_short_name}} here!\nWe're located at: {{custom_values.business_location}}",
+      "widgetSlug": "onewayadultbjjjibiyzx5zjvx",
+      "calendarType": "event",
+      "widgetType": "default",
+      "eventTitle": "{{contact.name}} <> {{custom_values.business_short_name}}",
+      "eventColor": "#E67C73",
+      "meetingLocation": "",
+      "slotDuration": 60,
+      "slotDurationUnit": "hours",
+      "slotInterval": 60,
+      "slotIntervalUnit": "hours",
+      "slotBufferUnit": "mins",
+      "appoinmentPerSlot": 20,
+      "appoinmentPerDay": 20,
+      "openHours": [
+        {
+          "hours": [
+            {
+              "closeHour": 19,
+              "openHour": 18,
+              "closeMinute": 30,
+              "openMinute": 30
+            }
+          ],
+          "daysOfTheWeek": [
+            1
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 13,
+              "openHour": 12,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            2
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 19,
+              "openHour": 18,
+              "closeMinute": 30,
+              "openMinute": 30
+            }
+          ],
+          "daysOfTheWeek": [
+            3
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 13,
+              "openHour": 12,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            4
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 13,
+              "openHour": 12,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            6
+          ]
+        }
+      ],
+      "enableRecurring": false,
+      "recurring": {
+        "monthDays": [],
+        "bookingOption": "skip",
+        "count": 1,
+        "freq": "DAILY",
+        "weekDays": [],
+        "bookingOverlapDefaultStatus": "",
+        "interval": null
+      },
+      "formId": "LUBkjoXLU7igZzh32mhh",
+      "stickyContact": false,
+      "isLivePaymentMode": false,
+      "autoConfirm": true,
+      "googleInvitationEmails": false,
+      "allowReschedule": true,
+      "allowCancellation": true,
+      "shouldAssignContactToTeamMember": false,
+      "shouldSkipAssigningContactForExisting": false,
+      "notes": "We're looking forward to meeting you!\nWondering what to bring?\n{{custom_values.bring_this}}\n\nLocation: {{appointment.meeting_location}}\n\nIf for any reason you need to cancel or reschedule, please use one of the links below!\nReschedule:\n{{reschedule_link}}\n\n\n\nPhone: {{contact.phone}}\nEmail:- {{contact.email}}\nNotes: {{appointment.notes}}Need to make a change to this event?\nReschedule:-\n{{reschedule_link}}\n\nCancel:-\n{{cancellation_link}}",
+      "pixelId": "{{custom_values.fb_pixel_id}}",
+      "formSubmitType": "RedirectURL",
+      "formSubmitRedirectUrl": "{{custom_values.booking_confirmation_page}}",
+      "formSubmitThanksMessage": "Thank you for your appointment request. We will contact you shortly to confirm your request.",
+      "availabilities": [],
+      "guestType": "collect_detail",
+      "consentLabel": "I confirm that I want to receive content from this company using any contact information I provide.",
+      "calendarCoverImage": "",
+      "lookBusyConfig": {
+        "lookBusyPercentage": 0,
+        "enabled": false
+      },
+      "allowBookingAfterUnit": "hours",
+      "allowBookingAfter": 2,
+      "allowBookingFor": 7,
+      "allowBookingForUnit": "days",
+      "preBufferUnit": "mins"
+    },
+    {
+      "id": "OOYioPoR8cpMzTgCQB42",
+      "notifications": [
+        {
+          "shouldSendToContact": false,
+          "shouldSendToSelectedUsers": true,
+          "selectedUsers": "{{custom_values.from_email}}\n{{custom_values.lead_email}}",
+          "shouldSendToUser": false,
+          "templateId": "default",
+          "type": "email",
+          "shouldSendToGuest": false
+        }
+      ],
+      "locationId": "lTs2R8SUg2ZFmd0SmNUE",
+      "groupId": "85atHrjTjpdhnuXatWJZ",
+      "name": "Muay Thai / Cardio Kickboxing - First Class",
+      "description": "Book Your Free Muay Thai/Cardio Kickboxing Trial with {{custom_values.business_short_name}} here!\nWe're located at: {{custom_values.business_location}}",
+      "widgetSlug": "onewaymuaythaiorcardiokickboxingtrialzzc0cr",
+      "calendarType": "event",
+      "widgetType": "default",
+      "eventTitle": "{{contact.name}} <> {{custom_values.business_short_name}}",
+      "eventColor": "#F4511E",
+      "meetingLocation": "",
+      "slotDuration": 60,
+      "slotDurationUnit": "hours",
+      "slotInterval": 60,
+      "slotIntervalUnit": "hours",
+      "slotBufferUnit": "mins",
+      "appoinmentPerSlot": 8,
+      "appoinmentPerDay": 24,
+      "openHours": [
+        {
+          "hours": [
+            {
+              "closeHour": 11,
+              "openHour": 10,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            0
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 18,
+              "openHour": 17,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 20,
+              "openHour": 19,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 13,
+              "openHour": 12,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            1
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 19,
+              "openHour": 18,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 8,
+              "openHour": 7,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            2
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 18,
+              "openHour": 17,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 20,
+              "openHour": 19,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 13,
+              "openHour": 12,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            3
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 19,
+              "openHour": 18,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 8,
+              "openHour": 7,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            4
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 18,
+              "openHour": 17,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 13,
+              "openHour": 12,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            5
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 11,
+              "openHour": 10,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            6
+          ]
+        }
+      ],
+      "enableRecurring": false,
+      "recurring": {
+        "monthDays": [],
+        "bookingOption": "skip",
+        "count": 1,
+        "freq": "DAILY",
+        "weekDays": [],
+        "bookingOverlapDefaultStatus": "",
+        "interval": null
+      },
+      "formId": "LUBkjoXLU7igZzh32mhh",
+      "stickyContact": false,
+      "isLivePaymentMode": false,
+      "autoConfirm": true,
+      "googleInvitationEmails": false,
+      "allowReschedule": true,
+      "allowCancellation": true,
+      "shouldAssignContactToTeamMember": false,
+      "shouldSkipAssigningContactForExisting": false,
+      "notes": "We're looking forward to meeting you!\nWondering what to bring?\n{{custom_values.bring_this}}\n\nLocation: {{appointment.meeting_location}}\n\nIf for any reason you need to cancel or reschedule, please use one of the links below!\nReschedule:\n{{reschedule_link}}\n\n\n\nPhone: {{contact.phone}}\nEmail:- {{contact.email}}\nNotes: {{appointment.notes}}Need to make a change to this event?\nReschedule:-\n{{reschedule_link}}\n\nCancel:-\n{{cancellation_link}}",
+      "pixelId": "{{custom_values.fb_pixel_id}}",
+      "formSubmitType": "RedirectURL",
+      "formSubmitRedirectUrl": "{{custom_values.booking_confirmation_page}}",
+      "formSubmitThanksMessage": "Thank you for your appointment request. We will contact you shortly to confirm your request.",
+      "availabilities": [],
+      "guestType": "collect_detail",
+      "consentLabel": "I confirm that I want to receive content from this company using any contact information I provide.",
+      "calendarCoverImage": "",
+      "lookBusyConfig": {
+        "lookBusyPercentage": 0,
+        "enabled": false
+      },
+      "allowBookingAfterUnit": "hours",
+      "allowBookingAfter": 2,
+      "allowBookingFor": 7,
+      "allowBookingForUnit": "days",
+      "preBufferUnit": "mins"
+    },
+    {
+      "id": "PTzcwEmL1mxG5Ur35eV1",
+      "notifications": [
+        {
+          "shouldSendToContact": false,
+          "shouldSendToSelectedUsers": true,
+          "selectedUsers": "{{custom_values.from_email}}\n{{custom_values.lead_email}}",
+          "shouldSendToUser": false,
+          "templateId": "default",
+          "type": "email",
+          "shouldSendToGuest": false
+        }
+      ],
+      "locationId": "lTs2R8SUg2ZFmd0SmNUE",
+      "groupId": "iNjC7v4rXD1ullUfhOSC",
+      "name": "Brazilian Jiu Jitsu - No Gi (Grappling) - First Class",
+      "description": "Book Your Free Brazilian Jiu Jitsu - No Gi (Grappling) - First Class Trial with {{custom_values.business_short_name}} here!\nWe're located at: {{custom_values.business_location}}",
+      "widgetSlug": "onewayadultbjjstnizz",
+      "calendarType": "event",
+      "widgetType": "default",
+      "eventTitle": "{{contact.name}} <> {{custom_values.business_short_name}}",
+      "eventColor": "#039BE5",
+      "meetingLocation": "{{custom_values.business_location}}",
+      "slotDuration": 60,
+      "slotDurationUnit": "hours",
+      "slotInterval": 60,
+      "slotIntervalUnit": "hours",
+      "slotBufferUnit": "mins",
+      "appoinmentPerSlot": 20,
+      "appoinmentPerDay": 20,
+      "openHours": [
+        {
+          "hours": [
+            {
+              "closeHour": 20,
+              "openHour": 19,
+              "closeMinute": 30,
+              "openMinute": 30
+            }
+          ],
+          "daysOfTheWeek": [
+            2
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 7,
+              "openHour": 6,
+              "closeMinute": 0,
+              "openMinute": 0
+            },
+            {
+              "closeHour": 19,
+              "openHour": 18,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 13,
+              "openHour": 12,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            3
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 20,
+              "openHour": 19,
+              "closeMinute": 30,
+              "openMinute": 30
+            }
+          ],
+          "daysOfTheWeek": [
+            4
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 13,
+              "openHour": 12,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            6
+          ]
+        }
+      ],
+      "enableRecurring": false,
+      "recurring": {
+        "monthDays": [],
+        "bookingOption": "skip",
+        "count": 1,
+        "freq": "DAILY",
+        "weekDays": [],
+        "bookingOverlapDefaultStatus": "",
+        "interval": null
+      },
+      "formId": "LUBkjoXLU7igZzh32mhh",
+      "stickyContact": false,
+      "isLivePaymentMode": false,
+      "autoConfirm": true,
+      "googleInvitationEmails": false,
+      "allowReschedule": true,
+      "allowCancellation": true,
+      "shouldAssignContactToTeamMember": false,
+      "shouldSkipAssigningContactForExisting": false,
+      "notes": "We're looking forward to meeting you!\nWondering what to bring?\n{{custom_values.bring_this}}\n\nLocation: {{appointment.meeting_location}}\n\nIf for any reason you need to cancel or reschedule, please use one of the links below!\nReschedule:\n{{reschedule_link}}\n\n\n\nPhone: {{contact.phone}}\nEmail:- {{contact.email}}\nNotes: {{appointment.notes}}Need to make a change to this event?\nReschedule:-\n{{reschedule_link}}\n\nCancel:-\n{{cancellation_link}}",
+      "pixelId": "{{custom_values.fb_pixel_id}}",
+      "formSubmitType": "RedirectURL",
+      "formSubmitRedirectUrl": "{{custom_values.booking_confirmation_page}}",
+      "formSubmitThanksMessage": "Thank you for your appointment request. We will contact you shortly to confirm your request.",
+      "availabilities": [],
+      "guestType": "collect_detail",
+      "consentLabel": "I confirm that I want to receive content from this company using any contact information I provide.",
+      "calendarCoverImage": "",
+      "allowBookingAfterUnit": "hours",
+      "allowBookingAfter": 2,
+      "allowBookingFor": 7,
+      "allowBookingForUnit": "days",
+      "preBufferUnit": "mins"
+    },
+    {
+      "id": "fPLLARhkhhVWjprkPKj4",
+      "notifications": [
+        {
+          "shouldSendToContact": false,
+          "shouldSendToSelectedUsers": true,
+          "selectedUsers": "{{custom_values.from_email}}\n{{custom_values.lead_email}}",
+          "shouldSendToUser": false,
+          "templateId": "default",
+          "type": "email",
+          "shouldSendToGuest": false
+        }
+      ],
+      "locationId": "lTs2R8SUg2ZFmd0SmNUE",
+      "groupId": "gCeZ0A2bXLebNRgv8ZPv",
+      "name": "Tots (4-7yrs) BJJ - First Class",
+      "description": "Book Your Free Tots (4-7yrs) Jiu Jitsu Trial with {{custom_values.business_short_name}} here!\nWe're located at: {{custom_values.business_location}}",
+      "widgetSlug": "onewaytotsbjj",
+      "calendarType": "event",
+      "widgetType": "default",
+      "eventTitle": "{{contact.name}} <> {{custom_values.business_short_name}}",
+      "eventColor": "#039BE5",
+      "meetingLocation": "{{custom_values.business_location}}",
+      "slotDuration": 45,
+      "slotDurationUnit": "mins",
+      "slotInterval": 45,
+      "slotIntervalUnit": "mins",
+      "slotBufferUnit": "mins",
+      "appoinmentPerSlot": 8,
+      "appoinmentPerDay": 8,
+      "openHours": [
+        {
+          "hours": [
+            {
+              "closeHour": 18,
+              "openHour": 17,
+              "closeMinute": 25,
+              "openMinute": 40
+            }
+          ],
+          "daysOfTheWeek": [
+            2
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 18,
+              "openHour": 17,
+              "closeMinute": 25,
+              "openMinute": 40
+            }
+          ],
+          "daysOfTheWeek": [
+            4
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 11,
+              "openHour": 10,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            6
+          ]
+        }
+      ],
+      "enableRecurring": false,
+      "recurring": {
+        "monthDays": [],
+        "bookingOption": "skip",
+        "count": 1,
+        "freq": "DAILY",
+        "weekDays": [],
+        "bookingOverlapDefaultStatus": "",
+        "interval": null
+      },
+      "formId": "LUBkjoXLU7igZzh32mhh",
+      "stickyContact": false,
+      "isLivePaymentMode": false,
+      "autoConfirm": true,
+      "googleInvitationEmails": false,
+      "allowReschedule": true,
+      "allowCancellation": true,
+      "shouldAssignContactToTeamMember": false,
+      "shouldSkipAssigningContactForExisting": false,
+      "notes": "We're looking forward to meeting you!\nWondering what to bring?\n{{custom_values.bring_this}}\n\nLocation: {{appointment.meeting_location}}\n\nIf for any reason you need to cancel or reschedule, please use one of the links below!\nReschedule:\n{{reschedule_link}}\n\n\n\nPhone: {{contact.phone}}\nEmail:- {{contact.email}}\nNotes: {{appointment.notes}}Need to make a change to this event?\nReschedule:-\n{{reschedule_link}}\n\nCancel:-\n{{cancellation_link}}",
+      "pixelId": "{{custom_values.fb_pixel_id}}",
+      "formSubmitType": "RedirectURL",
+      "formSubmitRedirectUrl": "{{custom_values.booking_confirmation_page}}",
+      "formSubmitThanksMessage": "Thank you for your appointment request. We will contact you shortly to confirm your request.",
+      "availabilities": [],
+      "guestType": "collect_detail",
+      "consentLabel": "I confirm that I want to receive content from this company using any contact information I provide.",
+      "calendarCoverImage": "",
+      "allowBookingAfterUnit": "hours",
+      "allowBookingAfter": 2,
+      "allowBookingFor": 7,
+      "allowBookingForUnit": "days",
+      "preBufferUnit": "mins"
+    },
+    {
+      "id": "iMG0B08EbB8ciozaGQ5J",
+      "notifications": [
+        {
+          "shouldSendToContact": false,
+          "shouldSendToSelectedUsers": true,
+          "selectedUsers": "{{custom_values.from_email}}\n{{custom_values.lead_email}}",
+          "shouldSendToUser": false,
+          "templateId": "default",
+          "type": "email",
+          "shouldSendToGuest": false
+        }
+      ],
+      "locationId": "lTs2R8SUg2ZFmd0SmNUE",
+      "groupId": "iNjC7v4rXD1ullUfhOSC",
+      "name": "Brazilian Jiu Jitsu - First Class",
+      "description": "Book Your Free First Adult Jiu Jitsu Fundamentals Trial with {{custom_values.business_short_name}} here!\nWe're located at: {{custom_values.business_location}}",
+      "widgetSlug": "onewayadultbjj",
+      "calendarType": "event",
+      "widgetType": "default",
+      "eventTitle": "{{contact.name}} <> {{custom_values.business_short_name}}",
+      "eventColor": "#039BE5",
+      "meetingLocation": "{{custom_values.business_location}}",
+      "slotDuration": 60,
+      "slotDurationUnit": "hours",
+      "slotInterval": 60,
+      "slotIntervalUnit": "hours",
+      "slotBufferUnit": "mins",
+      "appoinmentPerSlot": 20,
+      "appoinmentPerDay": 20,
+      "openHours": [
+        {
+          "hours": [
+            {
+              "closeHour": 12,
+              "openHour": 11,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            0
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 13,
+              "openHour": 12,
+              "closeMinute": 0,
+              "openMinute": 0
+            },
+            {
+              "closeHour": 19,
+              "openHour": 18,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 7,
+              "openHour": 6,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            1
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 7,
+              "openHour": 6,
+              "closeMinute": 0,
+              "openMinute": 0
+            },
+            {
+              "closeHour": 19,
+              "openHour": 18,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 20,
+              "openHour": 19,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 13,
+              "openHour": 12,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            2
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 20,
+              "openHour": 19,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 13,
+              "openHour": 12,
+              "closeMinute": 0,
+              "openMinute": 0
+            },
+            {
+              "closeHour": 7,
+              "openHour": 6,
+              "closeMinute": 0,
+              "openMinute": 0
+            },
+            {
+              "closeHour": 19,
+              "openHour": 18,
+              "closeMinute": 30,
+              "openMinute": 30
+            }
+          ],
+          "daysOfTheWeek": [
+            3
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 7,
+              "openHour": 6,
+              "closeMinute": 0,
+              "openMinute": 0
+            },
+            {
+              "closeHour": 19,
+              "openHour": 18,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 20,
+              "openHour": 19,
+              "closeMinute": 30,
+              "openMinute": 30
+            },
+            {
+              "closeHour": 13,
+              "openHour": 12,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            4
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 7,
+              "openHour": 6,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            5
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 13,
+              "openHour": 12,
+              "closeMinute": 0,
+              "openMinute": 0
+            },
+            {
+              "closeHour": 12,
+              "openHour": 11,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            6
+          ]
+        }
+      ],
+      "enableRecurring": false,
+      "recurring": {
+        "monthDays": [],
+        "bookingOption": "skip",
+        "count": 1,
+        "freq": "DAILY",
+        "weekDays": [],
+        "bookingOverlapDefaultStatus": "",
+        "interval": null
+      },
+      "formId": "LUBkjoXLU7igZzh32mhh",
+      "stickyContact": false,
+      "isLivePaymentMode": false,
+      "autoConfirm": true,
+      "googleInvitationEmails": false,
+      "allowReschedule": true,
+      "allowCancellation": true,
+      "shouldAssignContactToTeamMember": false,
+      "shouldSkipAssigningContactForExisting": false,
+      "notes": "We're looking forward to meeting you!\nWondering what to bring?\n{{custom_values.bring_this}}\n\nLocation: {{appointment.meeting_location}}\n\nIf for any reason you need to cancel or reschedule, please use one of the links below!\nReschedule:\n{{reschedule_link}}\n\n\n\nPhone: {{contact.phone}}\nEmail:- {{contact.email}}\nNotes: {{appointment.notes}}Need to make a change to this event?\nReschedule:-\n{{reschedule_link}}\n\nCancel:-\n{{cancellation_link}}",
+      "pixelId": "{{custom_values.fb_pixel_id}}",
+      "formSubmitType": "RedirectURL",
+      "formSubmitRedirectUrl": "{{custom_values.booking_confirmation_page}}",
+      "formSubmitThanksMessage": "Thank you for your appointment request. We will contact you shortly to confirm your request.",
+      "availabilities": [],
+      "guestType": "collect_detail",
+      "consentLabel": "I confirm that I want to receive content from this company using any contact information I provide.",
+      "calendarCoverImage": "",
+      "allowBookingAfterUnit": "hours",
+      "allowBookingAfter": 2,
+      "allowBookingFor": 7,
+      "allowBookingForUnit": "days",
+      "preBufferUnit": "mins"
+    },
+    {
+      "id": "kK5V0iyw8xcBTA9Pw0L9",
+      "notifications": [
+        {
+          "shouldSendToContact": false,
+          "shouldSendToSelectedUsers": true,
+          "selectedUsers": "{{custom_values.from_email}}\n{{custom_values.lead_email}}",
+          "shouldSendToUser": false,
+          "templateId": "default",
+          "type": "email",
+          "shouldSendToGuest": false
+        }
+      ],
+      "locationId": "lTs2R8SUg2ZFmd0SmNUE",
+      "groupId": "EbLlZI9kHXF4SzAK4fgC",
+      "name": "MMA - First Class",
+      "description": "<p style=\"margin:0px;color:#10182899\">Book Your Free MMA Free Trial with {{custom_values.business_short_name}} here! We're located at: {{custom_values.business_location}}</p>",
+      "widgetSlug": "onewayadultbjjjibiyzx5zjvx1vz3gc",
+      "calendarType": "event",
+      "widgetType": "default",
+      "eventTitle": "{{contact.name}} <> Free MMA Trial {{custom_values.business_short_name}}",
+      "eventColor": "#039BE5",
+      "meetingLocation": "",
+      "slotDuration": 60,
+      "slotDurationUnit": "hours",
+      "slotInterval": 60,
+      "slotIntervalUnit": "hours",
+      "slotBufferUnit": "mins",
+      "appoinmentPerSlot": 20,
+      "appoinmentPerDay": 20,
+      "openHours": [
+        {
+          "hours": [
+            {
+              "closeHour": 20,
+              "openHour": 19,
+              "closeMinute": 30,
+              "openMinute": 30
+            }
+          ],
+          "daysOfTheWeek": [
+            2
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 20,
+              "openHour": 19,
+              "closeMinute": 30,
+              "openMinute": 30
+            }
+          ],
+          "daysOfTheWeek": [
+            4
+          ]
+        }
+      ],
+      "enableRecurring": false,
+      "recurring": {
+        "monthDays": [],
+        "bookingOption": "skip",
+        "count": 1,
+        "freq": "DAILY",
+        "weekDays": [],
+        "bookingOverlapDefaultStatus": "",
+        "interval": null
+      },
+      "formId": "LUBkjoXLU7igZzh32mhh",
+      "stickyContact": false,
+      "isLivePaymentMode": false,
+      "autoConfirm": true,
+      "googleInvitationEmails": false,
+      "allowReschedule": true,
+      "allowCancellation": true,
+      "shouldAssignContactToTeamMember": false,
+      "shouldSkipAssigningContactForExisting": false,
+      "notes": "We're looking forward to meeting you!\nWondering what to bring?\n{{custom_values.bring_this}}\n\nLocation: {{appointment.meeting_location}}\n\nIf for any reason you need to cancel or reschedule, please use one of the links below!\nReschedule:\n{{reschedule_link}}\n\n\n\nPhone: {{contact.phone}}\nEmail:- {{contact.email}}\nNotes: {{appointment.notes}}Need to make a change to this event?\nReschedule:-\n{{reschedule_link}}\n\nCancel:-\n{{cancellation_link}}",
+      "pixelId": "{{custom_values.fb_pixel_id}}",
+      "formSubmitType": "RedirectURL",
+      "formSubmitRedirectUrl": "{{custom_values.booking_confirmation_page}}",
+      "formSubmitThanksMessage": "Thank you for your appointment request. We will contact you shortly to confirm your request.",
+      "availabilities": [],
+      "guestType": "collect_detail",
+      "consentLabel": "I confirm that I want to receive content from this company using any contact information I provide.",
+      "calendarCoverImage": "",
+      "lookBusyConfig": {
+        "lookBusyPercentage": 0,
+        "enabled": false
+      },
+      "allowBookingAfterUnit": "hours",
+      "allowBookingAfter": 2,
+      "allowBookingFor": 7,
+      "allowBookingForUnit": "days",
+      "preBufferUnit": "mins"
+    },
+    {
+      "id": "yg3JpWfL7hg3TTgX2myK",
+      "notifications": [
+        {
+          "shouldSendToContact": false,
+          "shouldSendToSelectedUsers": true,
+          "selectedUsers": "{{custom_values.from_email}}\n{{custom_values.lead_email}}",
+          "shouldSendToUser": false,
+          "templateId": "default",
+          "type": "email",
+          "shouldSendToGuest": false
+        }
+      ],
+      "locationId": "lTs2R8SUg2ZFmd0SmNUE",
+      "groupId": "gCeZ0A2bXLebNRgv8ZPv",
+      "name": "Kids & Teens (8-11yrs) BJJ - First Class",
+      "description": "Book Your Free Kids & Teens (8-11yrs) Jiu Jitsu Trial with {{custom_values.business_short_name}} here!\nWe're located at: {{custom_values.business_location}}",
+      "widgetSlug": "onewaykidsandteensbjj",
+      "calendarType": "event",
+      "widgetType": "default",
+      "eventTitle": "{{contact.name}} <> {{custom_values.business_short_name}}",
+      "eventColor": "#039BE5",
+      "meetingLocation": "{{custom_values.business_location}}",
+      "slotDuration": 45,
+      "slotDurationUnit": "mins",
+      "slotInterval": 45,
+      "slotIntervalUnit": "mins",
+      "slotBufferUnit": "mins",
+      "appoinmentPerSlot": 8,
+      "appoinmentPerDay": 8,
+      "openHours": [
+        {
+          "hours": [
+            {
+              "closeHour": 18,
+              "openHour": 17,
+              "closeMinute": 25,
+              "openMinute": 40
+            }
+          ],
+          "daysOfTheWeek": [
+            1
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 18,
+              "openHour": 17,
+              "closeMinute": 25,
+              "openMinute": 40
+            }
+          ],
+          "daysOfTheWeek": [
+            3
+          ]
+        },
+        {
+          "hours": [
+            {
+              "closeHour": 11,
+              "openHour": 10,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            6
+          ]
+        }
+      ],
+      "enableRecurring": false,
+      "recurring": {
+        "monthDays": [],
+        "bookingOption": "skip",
+        "count": 1,
+        "freq": "DAILY",
+        "weekDays": [],
+        "bookingOverlapDefaultStatus": "",
+        "interval": null
+      },
+      "formId": "LUBkjoXLU7igZzh32mhh",
+      "stickyContact": false,
+      "isLivePaymentMode": false,
+      "autoConfirm": true,
+      "googleInvitationEmails": false,
+      "allowReschedule": true,
+      "allowCancellation": true,
+      "shouldAssignContactToTeamMember": false,
+      "shouldSkipAssigningContactForExisting": false,
+      "notes": "We're looking forward to meeting you!\nWondering what to bring?\n{{custom_values.bring_this}}\n\nLocation: {{appointment.meeting_location}}\n\nIf for any reason you need to cancel or reschedule, please use one of the links below!\nReschedule:\n{{reschedule_link}}\n\n\n\nPhone: {{contact.phone}}\nEmail:- {{contact.email}}\nNotes: {{appointment.notes}}Need to make a change to this event?\nReschedule:-\n{{reschedule_link}}\n\nCancel:-\n{{cancellation_link}}",
+      "pixelId": "{{custom_values.fb_pixel_id}}",
+      "formSubmitType": "RedirectURL",
+      "formSubmitRedirectUrl": "{{custom_values.booking_confirmation_page}}",
+      "formSubmitThanksMessage": "Thank you for your appointment request. We will contact you shortly to confirm your request.",
+      "availabilities": [],
+      "guestType": "collect_detail",
+      "consentLabel": "I confirm that I want to receive content from this company using any contact information I provide.",
+      "calendarCoverImage": "",
+      "allowBookingAfterUnit": "hours",
+      "allowBookingAfter": 2,
+      "allowBookingFor": 7,
+      "allowBookingForUnit": "days",
+      "preBufferUnit": "mins"
+    },
+    {
+      "id": "z2YSw2CRZB62etQMFPIZ",
+      "notifications": [
+        {
+          "shouldSendToContact": false,
+          "shouldSendToSelectedUsers": true,
+          "selectedUsers": "{{custom_values.from_email}}\n{{custom_values.lead_email}}",
+          "shouldSendToUser": false,
+          "templateId": "default",
+          "type": "email",
+          "shouldSendToGuest": false
+        }
+      ],
+      "locationId": "lTs2R8SUg2ZFmd0SmNUE",
+      "groupId": "gCeZ0A2bXLebNRgv8ZPv",
+      "name": "No Gi Family Class - First Class",
+      "description": "Book Your Free BJJ Family Class Trial with {{custom_values.business_short_name}} here!\nWe're located at: {{custom_values.business_location}}",
+      "widgetSlug": "onewaytotsbjjjk0nvl",
+      "calendarType": "event",
+      "widgetType": "default",
+      "eventTitle": "{{contact.name}} <> {{custom_values.business_short_name}}",
+      "eventColor": "#33B679",
+      "meetingLocation": "",
+      "slotDuration": 45,
+      "slotDurationUnit": "mins",
+      "slotInterval": 45,
+      "slotIntervalUnit": "mins",
+      "slotBufferUnit": "mins",
+      "appoinmentPerSlot": 8,
+      "appoinmentPerDay": 8,
+      "openHours": [
+        {
+          "hours": [
+            {
+              "closeHour": 11,
+              "openHour": 10,
+              "closeMinute": 0,
+              "openMinute": 0
+            }
+          ],
+          "daysOfTheWeek": [
+            6
+          ]
+        }
+      ],
+      "enableRecurring": false,
+      "recurring": {
+        "monthDays": [],
+        "bookingOption": "skip",
+        "count": 1,
+        "freq": "DAILY",
+        "weekDays": [],
+        "bookingOverlapDefaultStatus": "",
+        "interval": null
+      },
+      "formId": "LUBkjoXLU7igZzh32mhh",
+      "stickyContact": false,
+      "isLivePaymentMode": false,
+      "autoConfirm": true,
+      "googleInvitationEmails": false,
+      "allowReschedule": true,
+      "allowCancellation": true,
+      "shouldAssignContactToTeamMember": false,
+      "shouldSkipAssigningContactForExisting": false,
+      "notes": "We're looking forward to meeting you!\nWondering what to bring?\n{{custom_values.bring_this}}\n\nLocation: {{appointment.meeting_location}}\n\nIf for any reason you need to cancel or reschedule, please use one of the links below!\nReschedule:\n{{reschedule_link}}\n\n\n\nPhone: {{contact.phone}}\nEmail:- {{contact.email}}\nNotes: {{appointment.notes}}Need to make a change to this event?\nReschedule:-\n{{reschedule_link}}\n\nCancel:-\n{{cancellation_link}}",
+      "pixelId": "{{custom_values.fb_pixel_id}}",
+      "formSubmitType": "RedirectURL",
+      "formSubmitRedirectUrl": "{{custom_values.booking_confirmation_page}}",
+      "formSubmitThanksMessage": "Thank you for your appointment request. We will contact you shortly to confirm your request.",
+      "availabilities": [],
+      "guestType": "collect_detail",
+      "consentLabel": "I confirm that I want to receive content from this company using any contact information I provide.",
+      "calendarCoverImage": "",
+      "lookBusyConfig": {
+        "lookBusyPercentage": 0,
+        "enabled": false
+      },
+      "allowBookingAfterUnit": "hours",
+      "allowBookingAfter": 2,
+      "allowBookingFor": 7,
+      "allowBookingForUnit": "days",
+      "preBufferUnit": "mins"
+    }
+  ],
+  "traceId": "98b36bb1-b179-4c04-b602-bad93fe8a7a1"
+};
+
+        let activeCalendars = new Set();
+        let currentMobileDay = 0;
+
+        function createCalendarView(data, filter = null) {
+            const calendarBody = document.getElementById('calendar-body');
+            const mobileCalendarView = document.getElementById('mobile-calendar-view');
+            calendarBody.innerHTML = '';
+            mobileCalendarView.innerHTML = '';
+            const timeSlots = Array.from({ length: 15 }, (_, i) => i + 6); // 6 AM to 8 PM
+
+            // Initialize mobile view structure with sorted time slots
+            const mobileTimeSlots = {};
+            timeSlots.forEach(hour => {
+                mobileTimeSlots[hour] = {
+                    element: document.createElement('div'),
+                    events: []
+                };
+                mobileTimeSlots[hour].element.className = 'mobile-time-slot';
+                mobileTimeSlots[hour].element.innerHTML = `<h3>${hour % 12 || 12}:00 ${hour < 12 ? 'AM' : 'PM'}</h3>`;
+                mobileCalendarView.appendChild(mobileTimeSlots[hour].element);
+            });
+
+            // Create desktop table structure
+            timeSlots.forEach(hour => {
+                const row = document.createElement('tr');
+                const timeCell = document.createElement('td');
+                timeCell.textContent = `${hour % 12 || 12}:00 ${hour < 12 ? 'AM' : 'PM'}`;
+                row.appendChild(timeCell);
+
+                for (let day = 0; day < 7; day++) {
+                    const cell = document.createElement('td');
+                    cell.className = 'time-slot';
+                    row.appendChild(cell);
+                }
+
+                calendarBody.appendChild(row);
+            });
+
+            // Populate calendar events
+            data.calendars.forEach(calendar => {
+                if (filter && !activeCalendars.has(calendar.id)) return;
+
+                calendar.openHours.forEach(openHour => {
+                    openHour.daysOfTheWeek.forEach(day => {
+                        openHour.hours.forEach(hours => {
+                            const startRow = hours.openHour - 6;
+                            const duration = calendar.slotDuration;
+                            const endTime = new Date(new Date().setHours(hours.openHour, hours.openMinute) + duration * 60000);
+
+                            const event = createEventElement(calendar, hours, duration, endTime);
+                            const cell = calendarBody.rows[startRow].cells[day === 7 ? 1 : day + 1];
+                            placeEventInCell(event, cell);
+
+                            // Add event to mobile view sorted by timeslot
+                            if (day === currentMobileDay) {
+                                const mobileEvent = createMobileEventElement(calendar, hours, duration, endTime);
+                                mobileTimeSlots[hours.openHour].events.push(mobileEvent);
+                            }
+                        });
+                    });
+                });
+            });
+
+            // Append events to mobile timeslot containers in order
+            Object.values(mobileTimeSlots).forEach(slot => {
+                slot.events.forEach(event => slot.element.appendChild(event));
+            });
+
+            updateEmptySlots();
+        }
+
+        function createEventElement(calendar, hours, duration, endTime) {
+            const event = document.createElement('a');
+            event.href = `https://link.mrkd.io/widget/bookings/${calendar.widgetSlug}`;
+            event.className = 'calendar-event';
+            event.innerHTML = `${calendar.name}<br><span class="event-duration">${duration} min</span>`;
+            event.style.backgroundColor = calendar.eventColor;
+            event.style.top = `${(hours.openMinute / 60) * 100}%`;
+            event.style.height = `${(duration / 60) * 100}%`;
+            return event;
+        }
+
+        function createMobileEventElement(calendar, hours, duration, endTime) {
+            const mobileEvent = document.createElement('a');
+            mobileEvent.href = `https://link.mrkd.io/widget/bookings/${calendar.widgetSlug}`;
+            mobileEvent.className = 'mobile-calendar-event';
+            mobileEvent.innerHTML = `
+                ${calendar.name}<br>
+                <span class="mobile-event-duration">
+                    ${formatTime(hours.openHour, hours.openMinute)} - ${formatTime(endTime.getHours(), endTime.getMinutes())}
+                    (${duration} min)
+                </span>
+            `;
+            mobileEvent.style.backgroundColor = calendar.eventColor;
+            return mobileEvent;
+        }
+
+        function placeEventInCell(event, cell) {
+            const existingEvents = cell.querySelectorAll('.calendar-event');
+            if (existingEvents.length > 0) {
+                const width = 100 / (existingEvents.length + 1);
+                existingEvents.forEach((existing, index) => {
+                    existing.style.width = `${width}%`;
+                    existing.style.left = `${width * index}%`;
+                });
+                event.style.width = `${width}%`;
+                event.style.left = `${width * existingEvents.length}%`;
+            }
+            cell.appendChild(event);
+        }
+
+        function updateEmptySlots() {
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                if (slot.children.length === 0) {
+                    slot.classList.add('empty');
+                } else {
+                    slot.classList.remove('empty');
+                }
+            });
+        }
+
+        function formatTime(hour, minute) {
+            return `${hour % 12 || 12}:${minute.toString().padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
+        }
+
+        function createFilterButtons(data) {
+            const filterContainer = document.getElementById('calendar-filter');
+            filterContainer.innerHTML = ''; // Clear existing filters
+
+            const allButton = document.createElement('button');
+            allButton.textContent = 'All';
+            allButton.className = 'filter-btn active';
+            allButton.onclick = () => filterCalendar('all');
+            filterContainer.appendChild(allButton);
+
+            data.calendars.forEach(calendar => {
+                const button = document.createElement('button');
+                button.textContent = calendar.name;
+                button.className = 'filter-btn';
+                button.onclick = () => filterCalendar(calendar.id);
+                filterContainer.appendChild(button);
+            });
+
+            // Create mobile dropdown options
+            const classSelect = document.getElementById('class-select');
+            classSelect.innerHTML = ''; // Clear existing options
+
+            const allOption = document.createElement('option');
+            allOption.value = 'all';
+            allOption.textContent = 'All Classes';
+            classSelect.appendChild(allOption);
+
+            data.calendars.forEach(calendar => {
+                const option = document.createElement('option');
+                option.value = calendar.id;
+                option.textContent = calendar.name;
+                classSelect.appendChild(option);
+            });
+
+            classSelect.addEventListener('change', (e) => {
+                filterCalendar(e.target.value);
+            });
+        }
+
+        function filterCalendar(filterId) {
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            if (filterId === 'all') {
+                activeCalendars.clear();
+                buttons[0].classList.add('active');
+            } else {
+                activeCalendars.clear();
+                activeCalendars.add(filterId);
+                event.target.classList.add('active');
+            }
+            createCalendarView(jsonData, filterId !== 'all');
+        }
+
+        function initializeMobileView() {
+            const daySelect = document.getElementById('day-select');
+            daySelect.addEventListener('change', (e) => {
+                currentMobileDay = parseInt(e.target.value);
+                createCalendarView(jsonData);
+            });
+        }
+
+        createFilterButtons(jsonData);
+        createCalendarView(jsonData);
+        initializeMobileView();
+    </script>
+</body>
+</html>
