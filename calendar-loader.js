@@ -1,27 +1,40 @@
 (function() {
-  // Fetch sub-account ID from script tag data attribute
-  var script = document.currentScript;
-  var subAccountId = script.getAttribute('data-subaccount-id');
+  // Extract subaccount ID from URL
+  var urlParams = new URLSearchParams(window.location.search);
+  var subAccountId = urlParams.get('subaccount');
+
+  if (!subAccountId) {
+    console.error('No subaccount ID provided in URL');
+    return;
+  }
+
+  // Load CSS
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://cdn.jsdelivr.net/gh/trentmrkd/animation@main/calendar.css';
+  document.head.appendChild(link);
 
   // Fetch calendar HTML
-  fetch('<https://your-domain.com/calendar-template.html>')
+  fetch('https://cdn.jsdelivr.net/gh/trentmrkd/animation@main/calendar-template.html')
     .then(response => response.text())
     .then(html => {
       // Insert calendar HTML into container
       document.getElementById('calendar-container').innerHTML = html;
 
-      // Fetch calendar data
-      return fetch(`https://your-api-domain.com/calendar-data/${subAccountId}`);
+      // Load calendar.js
+      var script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/gh/trentmrkd/animation@main/calendar.js';
+      script.onload = function() {
+        // Fetch calendar data
+        fetch(`https://cdn.jsdelivr.net/gh/trentmrkd/animation@main/${subAccountId}.json`)
+          .then(response => response.json())
+          .then(data => {
+            // Initialize calendar with fetched data
+            initializeCalendar(data);
+          })
+          .catch(error => console.error('Error loading calendar data:', error));
+      };
+      document.head.appendChild(script);
     })
-    .then(response => response.json())
-    .then(data => {
-      // Initialize calendar with fetched data
-      initializeCalendar(data);
-    })
-    .catch(error => console.error('Error loading calendar:', error));
+    .catch(error => console.error('Error loading calendar HTML:', error));
 })();
-
-function initializeCalendar(data) {
-  // Your existing calendar initialization code here
-  // ...
-}
