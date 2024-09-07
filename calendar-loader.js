@@ -1,10 +1,12 @@
 (function() {
-  // Extract subaccount ID from URL
-  var urlParams = new URLSearchParams(window.location.search);
-  var subAccountId = urlParams.get('subaccount');
+  // Find the calendar container
+  var container = document.getElementById('calendar-container');
+  
+  // Get the subaccount ID from the data attribute
+  var subAccountId = container.getAttribute('data-subaccount');
 
   if (!subAccountId) {
-    console.error('No subaccount ID provided in URL');
+    console.error('No subaccount ID provided in the calendar container data attribute');
     return;
   }
 
@@ -19,7 +21,7 @@
     .then(response => response.text())
     .then(html => {
       // Insert calendar HTML into container
-      document.getElementById('calendar-container').innerHTML = html;
+      container.innerHTML = html;
 
       // Load calendar.js
       var script = document.createElement('script');
