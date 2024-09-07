@@ -6,14 +6,12 @@
     <title>Responsive Dynamic Calendar View</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-
         body {
             font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 10px;
             background-color: #f4f4f4;
         }
-
         h1 {
             text-align: center;
             font-weight: 600;
@@ -21,7 +19,6 @@
             color: #4a4a4a;
             font-size: 24px;
         }
-
         #calendar-filter {
             display: flex;
             flex-wrap: wrap;
@@ -29,7 +26,6 @@
             gap: 8px;
             margin-bottom: 16px;
         }
-
         .filter-btn {
             padding: 8px 12px;
             font-size: 13px;
@@ -40,13 +36,11 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
         .filter-btn.active {
             background-color: #2196F3;
             color: white;
             border-color: #2196F3;
         }
-
         table {
             width: 100%;
             border-collapse: separate;
@@ -56,7 +50,6 @@
             overflow: hidden;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-
         th, td {
             background-color: white;
             padding: 10px;
@@ -64,23 +57,19 @@
             vertical-align: top;
             position: relative;
         }
-
         th {
             background-color: #f2f2f2;
             font-weight: 600;
             color: #4a4a4a;
         }
-
         .time-slot {
             height: 60px;
             border-top: 1px solid #e0e0e0;
             transition: height 0.3s ease;
         }
-
         .time-slot.empty {
             height: 20px;
         }
-
         .calendar-event {
             position: absolute;
             left: 2px;
@@ -97,43 +86,34 @@
             transition: transform 0.2s, box-shadow 0.2s;
             text-decoration: none;
         }
-
         .calendar-event:hover {
             transform: scale(1.05);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             z-index: 2;
         }
-
         .event-duration {
             font-size: 9px;
             opacity: 0.8;
         }
-
         #mobile-day-selector, #mobile-calendar-view, #mobile-class-filter {
             display: none;
         }
-
         @media (max-width: 768px) {
             body {
                 padding: 5px;
             }
-
             h1 {
                 font-size: 20px;
             }
-
             .filter-btn {
-                display: none; /* Hide buttons on mobile */
+                display: none;
             }
-
             table {
-                display: none; /* Hide table on mobile */
+                display: none;
             }
-
             #mobile-day-selector, #mobile-calendar-view, #mobile-class-filter {
-                display: block; /* Show mobile-specific elements */
+                display: block;
             }
-
             #mobile-day-selector select, #mobile-class-filter select {
                 width: 100%;
                 padding: 12px;
@@ -147,7 +127,6 @@
                 background-position: right 12px center;
                 margin-bottom: 12px;
             }
-
             .mobile-time-slot {
                 background-color: #f9f9f9;
                 margin-bottom: 12px;
@@ -155,7 +134,6 @@
                 border-radius: 6px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             }
-
             .mobile-time-slot h3 {
                 margin: 0 0 10px 0;
                 font-size: 16px;
@@ -163,7 +141,6 @@
                 border-bottom: 1px solid #eee;
                 padding-bottom: 5px;
             }
-
             .mobile-calendar-event {
                 display: block;
                 background-color: #2196F3;
@@ -176,7 +153,6 @@
                 width: 100%;
                 box-sizing: border-box;
             }
-
             .mobile-event-duration {
                 font-size: 12px;
                 opacity: 0.9;
@@ -187,17 +163,11 @@
     </style>
 </head>
 <body>
-    <h1>Dynamic Calendar View</h1>
     <div id="calendar-filter"></div>
-
-    <!-- Mobile class filter dropdown -->
     <div id="mobile-class-filter">
         <select id="class-select">
-            <!-- Options will be populated dynamically -->
         </select>
     </div>
-
-    <!-- Mobile day selector dropdown -->
     <div id="mobile-day-selector">
         <select id="day-select">
             <option value="0">Sunday</option>
@@ -209,7 +179,6 @@
             <option value="6">Saturday</option>
         </select>
     </div>
-
     <table>
         <thead>
             <tr>
@@ -224,12 +193,9 @@
             </tr>
         </thead>
         <tbody id="calendar-body">
-            <!-- Calendar slots will be inserted here dynamically -->
         </tbody>
     </table>
-
     <div id="mobile-calendar-view"></div>
-
     <script>
         // Paste your JSON data here
         const jsonData = {
@@ -1525,6 +1491,7 @@
   "traceId": "98b36bb1-b179-4c04-b602-bad93fe8a7a1"
 };
 
+
         let activeCalendars = new Set();
         let currentMobileDay = 0;
 
@@ -1533,9 +1500,9 @@
             const mobileCalendarView = document.getElementById('mobile-calendar-view');
             calendarBody.innerHTML = '';
             mobileCalendarView.innerHTML = '';
+
             const timeSlots = Array.from({ length: 15 }, (_, i) => i + 6); // 6 AM to 8 PM
 
-            // Initialize mobile view structure with sorted time slots
             const mobileTimeSlots = {};
             timeSlots.forEach(hour => {
                 mobileTimeSlots[hour] = {
@@ -1547,38 +1514,31 @@
                 mobileCalendarView.appendChild(mobileTimeSlots[hour].element);
             });
 
-            // Create desktop table structure
             timeSlots.forEach(hour => {
                 const row = document.createElement('tr');
                 const timeCell = document.createElement('td');
                 timeCell.textContent = `${hour % 12 || 12}:00 ${hour < 12 ? 'AM' : 'PM'}`;
                 row.appendChild(timeCell);
-
                 for (let day = 0; day < 7; day++) {
                     const cell = document.createElement('td');
                     cell.className = 'time-slot';
                     row.appendChild(cell);
                 }
-
                 calendarBody.appendChild(row);
             });
 
-            // Populate calendar events
             data.calendars.forEach(calendar => {
                 if (filter && !activeCalendars.has(calendar.id)) return;
-
                 calendar.openHours.forEach(openHour => {
                     openHour.daysOfTheWeek.forEach(day => {
                         openHour.hours.forEach(hours => {
                             const startRow = hours.openHour - 6;
                             const duration = calendar.slotDuration;
                             const endTime = new Date(new Date().setHours(hours.openHour, hours.openMinute) + duration * 60000);
-
                             const event = createEventElement(calendar, hours, duration, endTime);
                             const cell = calendarBody.rows[startRow].cells[day === 7 ? 1 : day + 1];
                             placeEventInCell(event, cell);
 
-                            // Add event to mobile view sorted by timeslot
                             if (day === currentMobileDay) {
                                 const mobileEvent = createMobileEventElement(calendar, hours, duration, endTime);
                                 mobileTimeSlots[hours.openHour].events.push(mobileEvent);
@@ -1588,7 +1548,6 @@
                 });
             });
 
-            // Append events to mobile timeslot containers in order
             Object.values(mobileTimeSlots).forEach(slot => {
                 slot.events.forEach(event => slot.element.appendChild(event));
             });
@@ -1653,13 +1612,11 @@
         function createFilterButtons(data) {
             const filterContainer = document.getElementById('calendar-filter');
             filterContainer.innerHTML = ''; // Clear existing filters
-
             const allButton = document.createElement('button');
             allButton.textContent = 'All';
             allButton.className = 'filter-btn active';
             allButton.onclick = () => filterCalendar('all');
             filterContainer.appendChild(allButton);
-
             data.calendars.forEach(calendar => {
                 const button = document.createElement('button');
                 button.textContent = calendar.name;
@@ -1668,22 +1625,18 @@
                 filterContainer.appendChild(button);
             });
 
-            // Create mobile dropdown options
             const classSelect = document.getElementById('class-select');
             classSelect.innerHTML = ''; // Clear existing options
-
             const allOption = document.createElement('option');
             allOption.value = 'all';
             allOption.textContent = 'All Classes';
             classSelect.appendChild(allOption);
-
             data.calendars.forEach(calendar => {
                 const option = document.createElement('option');
                 option.value = calendar.id;
                 option.textContent = calendar.name;
                 classSelect.appendChild(option);
             });
-
             classSelect.addEventListener('change', (e) => {
                 filterCalendar(e.target.value);
             });
@@ -1692,7 +1645,6 @@
         function filterCalendar(filterId) {
             const buttons = document.querySelectorAll('.filter-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
-
             if (filterId === 'all') {
                 activeCalendars.clear();
                 buttons[0].classList.add('active');
