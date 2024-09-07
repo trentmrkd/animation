@@ -1,0 +1,46 @@
+{
+  "calendars": [
+    {
+      "id": "bjj-101",
+      "name": "BJJ 101",
+      "description": "Beginner Brazilian Jiu-Jitsu class",
+      "eventColor": "#4285F4",
+      "widgetSlug": "bjj-101-booking",
+      "slotDuration": 60,
+      "openHours": [
+        {
+          "daysOfTheWeek": [1, 3, 5],
+          "hours": [
+            {
+              "openHour": 18,
+              "openMinute": 0,
+              "closeHour": 19,
+              "closeMinute": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "muay-thai",
+      "name": "Muay Thai",
+      "description": "Muay Thai kickboxing class",
+      "eventColor": "#EA4335",
+      "widgetSlug": "muay-thai-booking",
+      "slotDuration": 60,
+      "openHours": [
+        {
+          "daysOfTheWeek": [2, 4],
+          "hours": [
+            {
+              "openHour": 19,
+              "openMinute": 0,
+              "closeHour": 20,
+              "closeMinute": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
